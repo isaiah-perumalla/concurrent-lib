@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "concurrent-collections", "src\concurrent-collections\concurrent-collections.csproj", "{FE4E5B58-8508-4F1C-A342-4D351162DC7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "concurrent-lib.unit.tests", "test\concurrent-lib.unit.tests\concurrent-lib.unit.tests.csproj", "{4FEC2FC7-330F-4D57-BA99-E829EB64FF7F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE4E5B58-8508-4F1C-A342-4D351162DC7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE4E5B58-8508-4F1C-A342-4D351162DC7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE4E5B58-8508-4F1C-A342-4D351162DC7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE4E5B58-8508-4F1C-A342-4D351162DC7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FEC2FC7-330F-4D57-BA99-E829EB64FF7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FEC2FC7-330F-4D57-BA99-E829EB64FF7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FEC2FC7-330F-4D57-BA99-E829EB64FF7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FEC2FC7-330F-4D57-BA99-E829EB64FF7F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
