@@ -46,6 +46,12 @@
     <Compile Include="NonBlockingLongHashTableTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\concurrent-collections\concurrent-collections.csproj">
+      <Project>{FE4E5B58-8508-4F1C-A342-4D351162DC7E}</Project>
+      <Name>concurrent-collections</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
