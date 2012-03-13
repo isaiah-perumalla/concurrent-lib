@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace concurrent_collections
 {
@@ -6,23 +8,30 @@ namespace concurrent_collections
     {
         private readonly long[] _keys;
         private readonly object[] _values;
-        private readonly int _tableCapacity;
+        private readonly uint _tableLength;
         private static readonly object EMPTY = new object();
         private int size;
         private const long NO_KEY = 0;
 
-        public NonBlockingLongHashTable(int capacity)
+        public NonBlockingLongHashTable(uint capacity)
         {
-            _tableCapacity = PrimeClosestTo(capacity);
-            _keys = new long[_tableCapacity];
-             _values = new object[_tableCapacity];
+            _tableLength = PowerOf2ClosestTo(capacity*2);
+            _keys = new long[_tableLength];
+             _values = new object[_tableLength];
         }
 
       
-
-        private static int PrimeClosestTo(int capacity)
+        
+        private static uint PowerOf2ClosestTo(uint num)
         {
-            return capacity;
+            var n = num > 0 ? num - 1 : 0;
+            n |= n >> 1;
+            n |= n >> 2;
+            n |= n >> 4;
+            n |= n >> 8;
+            n |= n >> 16;
+            n++;
+            return num;
         }
 
 
@@ -64,7 +73,7 @@ namespace concurrent_collections
                 }
                 if (_keys[index] == key) break;
 
-                index++;
+                index = Next(index);
             }
             return index;
         }
@@ -76,6 +85,19 @@ namespace concurrent_collections
             if (previousVal == EMPTY || previousVal == null)
             {
                 _values[index] = factoryFunction();
+                size++;
+                return (T)_values[index];
+            }
+            return (T)previousVal;
+        }
+
+        public T PutIfAbsent(long key, T val)
+        {
+            var index = ClaimSlotFor(key);
+            var previousVal = _values[index];
+            if (previousVal == EMPTY || previousVal == null)
+            {
+                _values[index] = val;
                 size++;
                 return (T)_values[index];
             }
@@ -94,7 +116,7 @@ namespace concurrent_collections
                     size--;
                     return currentVal;
                 }
-                index++;
+                index = Next(index);
             }
 
         }
@@ -106,22 +128,32 @@ namespace concurrent_collections
             while(true)
             {
                 if (_keys[index] == NO_KEY) return false;
-                if(_keys[index] == key)
+                var value = _values[index];
+                if (_keys[index] == key && value!= EMPTY && value != null)
                 {
-                    val = (T)_values[index];
+                    val = (T)value;
                     return true;
                 }
-                index++;
+                index = Next(index);
 
             }
         }
 
-        private long IndexOf(long key)
+        private uint Next(uint index)
         {
-            var index = key%(_tableCapacity-1);
-            return index;
+            return (index + 1) & (_tableLength-1);
+        }
+
+        private uint IndexOf(long key)
+        {
+            return (uint)key&(_tableLength-1);
         }
 
 
+        public IEnumerable<long> KeySet()
+        {
+            T unused;
+            return _keys.Where(k => TryGetValue(k, out unused)).ToArray();
+        }
     }
 }
