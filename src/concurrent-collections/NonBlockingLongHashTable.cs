@@ -11,7 +11,6 @@ namespace concurrent_collections
         private readonly object[] _values;
         private readonly uint _tableLength;
         private static readonly object EMPTY = new object();
-        private int size;
         private AtomicInt slots = new AtomicInt();
         private static readonly object NO_MATCH_OLD = new object();
         private static readonly object MATCH_ANY = new object();
@@ -42,7 +41,7 @@ namespace concurrent_collections
 
         public int Count
         {
-            get { return size; }
+            get { return _size.Value; }
         }
 
         /// <summary>
@@ -112,6 +111,7 @@ namespace concurrent_collections
                 {
                     if ((previousVal == null || previousVal == EMPTY) && putVal != EMPTY) _size.Increment();
                     if (!(previousVal == null || previousVal == EMPTY) && putVal == EMPTY) _size.Decrement();
+                    return previousVal as T;
                 }   
                 //cas failed get previous value
                 previousVal = _values[idx];
@@ -187,14 +187,21 @@ namespace concurrent_collections
 
     public class AtomicInt
     {
+        private int count =0;
+
+        public int Value
+        {
+            get { return count; }
+        }
+
         public void Increment()
         {
-
+            Interlocked.Increment(ref count);
         }
 
         public void Decrement()
         {
-            
+            Interlocked.Decrement(ref count);
         }
     }
 }
