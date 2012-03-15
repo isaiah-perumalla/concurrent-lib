@@ -30,6 +30,7 @@ namespace concurrent_lib.unit.tests
             Assert.That(val, Is.EqualTo("val1"));
             
             Assert.That(_table.Remove(1000L), Is.EqualTo("val1"));
+            Assert.That(_table.Remove(1000L), Is.Null);
             Assert.That(_table.TryGetValue(1000L, out val), Is.False);
             Assert.That(_table.Count, Is.EqualTo(0));
             Assert.That(_table.Put(1000L, "val1"), Is.Null);
@@ -42,7 +43,7 @@ namespace concurrent_lib.unit.tests
             _table.Put(10000L, "val1");
             Assert.That(_table.PutIfAbsent(10000L, DontExecute), Is.EqualTo("val1"));
             Assert.That(_table.Count, Is.EqualTo(1));
-            Assert.That(_table.PutIfAbsent(10001L, () => "val2"), Is.EqualTo("val2"));
+            Assert.That(_table.PutIfAbsent(10001L, () => "val2"), Is.Null);
             Assert.That(_table.Count, Is.EqualTo(2));
 
         }
@@ -51,8 +52,8 @@ namespace concurrent_lib.unit.tests
         public void BasicConcurrencyAddRemoveConcurrenlty()
         {
             //In 4 threads concurrenlty add remove even odd numbered keys
-            const int numOfThreads = 4;
-            const int count = 128;
+            const int numOfThreads = 10;
+            const int count = 1024;
             var map = new NonBlockingLongHashTable<string>(count);
             var hashmapBlitzer = new HashMapBlitzer(numOfThreads, count, map);
             hashmapBlitzer.Blitz();

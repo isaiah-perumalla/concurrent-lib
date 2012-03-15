@@ -11,6 +11,7 @@ namespace concurrent_lib.unit.tests.utils
         private readonly NonBlockingLongHashTable<string> _map;
         private Barrier _barrier;
         private volatile AssertionException error;
+        private CountdownEvent _countdown;
 
         public HashMapBlitzer(int numOfThreads, int count, NonBlockingLongHashTable<string> map)
         {
@@ -18,32 +19,41 @@ namespace concurrent_lib.unit.tests.utils
             _numOfThreads = numOfThreads;
             _count = count;
             _map = map;
+            _countdown = new CountdownEvent(numOfThreads);
         }
 
         public void Blitz()
         {
-            var threads = new Thread[_numOfThreads];
-            for (var i = 0; i < _numOfThreads; i++)
+            int startKey = 0;
+            for (int i = 0; i < _numOfThreads; i++)
             {
-                int startKey;
-                if((i % 2) == 0)
-                 startKey = (_count *i);
-                else
-                {
-                    startKey = (_count * i)+1;
-                }
-                threads[i] = new Thread(x => AddRemove(startKey));
-                threads[i].Start();
-                if(i == _numOfThreads-1) AddRemove(startKey);
+                if (i % 2 == 0)
+                    startKey = (1 << (i + 1)) * _count;
+                else startKey += 1;
+                int trdId = i;
+                int key = startKey;
+                OnNewThread(x => AddRemove(key, "T"+trdId));
+                
             }
+
+            _countdown.Wait();
+
             Assert.That(error, Is.Null, "error detected");
         }
 
-        private void AddRemove(int startKey)
+        private Thread OnNewThread(ParameterizedThreadStart action)
+        {
+            var t = new Thread(action);
+            t.Start();
+            return t;
+        }
+
+
+        private void AddRemove(int startKey, string s)
         {
             try
             {
-                AddRemoveKeyValues(startKey, _count/_numOfThreads);
+                AddRemoveKeyValues(startKey, s, _count/_numOfThreads);
             }
             catch (AssertionException e)
             {
@@ -52,23 +62,31 @@ namespace concurrent_lib.unit.tests.utils
             }
         }
 
-        private void AddRemoveKeyValues(int startKey, int count)
+        private void AddRemoveKeyValues(int startKey, string s, int count)
         {
-            var val = Thread.CurrentThread.ManagedThreadId.ToString();
             _barrier.SignalAndWait();
-            for (var i = 0; i < count; i++)
+            try
             {
-                var key = startKey + (i*2);
-              
-                    Assert.That(_map.PutIfAbsent(key, val), Is.Null,
-                                "there should not be any previous value for key {0}", key);
-               
-            }
+                for (var i = 0; i / 2 < count; i += 2)
+                {
+                    var key = startKey + i;
 
-            for (var i = 0; i < count; i++)
+                    Assert.That(_map.PutIfAbsent(key, s), Is.Null,
+                                "there should not be any previous value for key {0}", key);
+
+                }
+
+                for (var i = 0; i / 2 < count; i += 2)
+                {
+                    var key = startKey + i;
+                    Assert.That(_map.Remove(key), Is.Not.Null,
+                                "error detected when {0} tried to remove, there should have been value for key {1} ", s,
+                                key);
+                }
+            }
+            finally
             {
-                var key = startKey + (i*2);
-                Assert.That(_map.Remove(key), Is.Not.Null, "error detected when remove, there should have been value for key {0} ", key);
+                _countdown.Signal();
             }
         }
 

@@ -1,27 +1,28 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace concurrent_collections
+namespace concurrent_lib.unit.tests
 {
-    public class NonBlockingLongHashTable<T> where T: class 
+    public class LockBasedLongHashTable<T> where T : class
     {
         private readonly long[] _keys;
         private readonly object[] _values;
         private readonly uint _tableLength;
         private static readonly object EMPTY = new object();
         private int size;
+        private readonly object lockobj = new object();
         private const long NO_KEY = 0;
 
-        public NonBlockingLongHashTable(uint capacity)
+        public LockBasedLongHashTable(uint capacity)
         {
-            _tableLength = PowerOf2ClosestTo(capacity*2);
+            _tableLength = PowerOf2ClosestTo(capacity * 2);
             _keys = new long[_tableLength];
-             _values = new object[_tableLength];
+            _values = new object[_tableLength];
         }
 
-      
-        
+
+
         private static uint PowerOf2ClosestTo(uint num)
         {
             var n = num > 0 ? num - 1 : 0;
@@ -48,7 +49,10 @@ namespace concurrent_collections
         /// <param name="val1"></param>
         /// <returns></returns>
         public T Put(long key, T val1)
-        {   var index = ClaimSlotFor(key);
+        {
+            lock (lockobj)
+            {
+                var index = ClaimSlotFor(key);
                 var previousVal = _values[index];
                 _values[index] = val1;
                 if (previousVal == EMPTY || previousVal == null)
@@ -56,8 +60,8 @@ namespace concurrent_collections
                     size++;
                     return null;
                 }
-                return (T) previousVal;
-            
+                return (T)previousVal;
+            }
         }
 
         private long ClaimSlotFor(long key)
@@ -79,7 +83,10 @@ namespace concurrent_collections
 
         public T PutIfAbsent(long key, Func<T> factoryFunction)
         {
-          
+            lock (lockobj)
+            {
+
+
                 var index = ClaimSlotFor(key);
                 var previousVal = _values[index];
                 if (previousVal == EMPTY || previousVal == null)
@@ -88,13 +95,15 @@ namespace concurrent_collections
                     size++;
                     return null;
                 }
-                return (T) previousVal;
-            
+                return (T)previousVal;
+            }
         }
 
         public T PutIfAbsent(long key, T val)
         {
-            
+            lock (lockobj)
+            {
+
 
                 var index = ClaimSlotFor(key);
                 var previousVal = _values[index];
@@ -104,13 +113,15 @@ namespace concurrent_collections
                     size++;
                     return (T)null;
                 }
-                return (T) previousVal;
-            
+                return (T)previousVal;
+            }
         }
 
         public T Remove(long key)
         {
-            
+            lock (lockobj)
+            {
+
 
                 var index = IndexOf(key);
                 while (true)
@@ -119,20 +130,22 @@ namespace concurrent_collections
                     if (_keys[index] == key)
                     {
                         var v = _values[index];
-                        if(v == EMPTY) return null;
-                        var currentVal = (T) v;
+                        if (v == EMPTY) return null;
+                        var currentVal = (T)v;
                         _values[index] = EMPTY;
                         size--;
                         return currentVal;
                     }
                     index = Next(index);
                 }
-            
+            }
         }
 
         public bool TryGetValue(long key, out T val)
         {
-            
+            lock (lockobj)
+            {
+
 
                 val = null;
                 var index = IndexOf(key);
@@ -142,23 +155,23 @@ namespace concurrent_collections
                     var value = _values[index];
                     if (_keys[index] == key && value != EMPTY && value != null)
                     {
-                        val = (T) value;
+                        val = (T)value;
                         return true;
                     }
                     index = Next(index);
 
                 }
-            
+            }
         }
 
         private uint Next(uint index)
         {
-            return (index + 1) & (_tableLength-1);
+            return (index + 1) & (_tableLength - 1);
         }
 
         private uint IndexOf(long key)
         {
-            return (uint)key&(_tableLength-1);
+            return (uint)key & (_tableLength - 1);
         }
 
 

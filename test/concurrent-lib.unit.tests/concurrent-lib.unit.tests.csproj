@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoarseLockBasedHashTable.cs" />
     <Compile Include="utils\HashMapBlitzer.cs" />
     <Compile Include="NonBlockingLongHashTableTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
