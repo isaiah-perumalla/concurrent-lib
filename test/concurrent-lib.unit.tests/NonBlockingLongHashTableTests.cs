@@ -53,7 +53,7 @@ namespace concurrent_lib.unit.tests
         {
             //In 4 threads concurrenlty add remove even odd numbered keys
             const int numOfThreads = 10;
-            const int count = 1024;
+            const int count = 2048;
             var map = new NonBlockingLongHashTable<string>(count);
             var hashmapBlitzer = new HashMapBlitzer(numOfThreads, count, map);
             hashmapBlitzer.Blitz();
@@ -61,7 +61,41 @@ namespace concurrent_lib.unit.tests
             Assert.That(map.KeySet(), Is.EqualTo(new long[0]), "all keys should have been deleted");
         }
 
-      
+     
+    [Test]
+    public void LargeInteration() {
+     const uint capacity = 10000;
+        var map = new NonBlockingLongHashTable<string>(capacity);
+        Assert.That( map.Count, Is.EqualTo(0) );
+    for( int i=1; i<capacity+1; i++ )
+           map.Put(i,"v"+i);
+    Assert.That( map.Count, Is.EqualTo(capacity) );
+
+    int sz =0;
+    long sum = 0;
+    foreach( var key in map.KeySet() ) {
+      sz++;
+      sum +=key;
+      Assert.That(key> 0 && key<=(capacity));
+    }
+
+    Assert.That(sum,Is.EqualTo(capacity*(capacity+1)/2), "Found all integers in list");
+
+    Assert.That( map.Remove(3), Is.EqualTo("v3") ,"can remove 3" );
+    Assert.That(  map.Remove(4), Is.EqualTo("v4"), "can remove 4" );
+   /* sz =0;
+    sum = 0;
+    for( long x : _nbhml.keySet() ) {
+      sz++;
+      sum += x;
+      assertTrue(x>=0 && x<=(capacity-1));
+      String v = _nbhml.get(x);
+      assertThat("",v.charAt(0),is('v'));
+      assertThat("",x,is(Long.parseLong(v.substring(1))));
+    }
+    assertThat("Found "+(capacity-2)+" ints",sz,is(capacity-2));
+    assertThat("Found all integers in list",sum,is(capacity*(capacity-1)/2 - (3+4)));*/
+  }
         private static string DontExecute()
         {
             throw new NotImplementedException();

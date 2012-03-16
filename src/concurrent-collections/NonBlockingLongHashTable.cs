@@ -1,10 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
 namespace concurrent_collections
 {
+    /// <summary>
+    /// high performance, Non-blocking concurrent hash table where keys are 64bit unsigned integers
+    /// Open addressing scheme using linear probing, makes it cpu-cache friendly
+    /// non resizeable must provide size at creation
+    /// Based on ideas from Cliff click's high scale lib
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class NonBlockingLongHashTable<T> where T : class
     {
         private readonly long[] _keys;
@@ -20,10 +28,15 @@ namespace concurrent_collections
         public NonBlockingLongHashTable(uint capacity)
         {
             _tableLength = PowerOf2ClosestTo(capacity*2);
+            Debug.Assert(IsPowerOf2(_tableLength));
             _keys = new long[_tableLength];
             _values = new object[_tableLength];
         }
 
+        private bool IsPowerOf2(uint x)
+        {
+            return (x & (x - 1)) == 0;
+        }
 
 
         private static uint PowerOf2ClosestTo(uint num)
@@ -34,8 +47,7 @@ namespace concurrent_collections
             n |= n >> 4;
             n |= n >> 8;
             n |= n >> 16;
-            n++;
-            return num;
+            return ++n;
         }
 
 
@@ -85,14 +97,13 @@ namespace concurrent_collections
         public T PutIfAbsent(long key, Func<T> factoryFunction)
         {
             object previousVal;
-            var index = ClaimSlotFor(key, out previousVal);
+            ClaimSlotFor(key, out previousVal);
             if (previousVal == EMPTY || previousVal == null)
             {
                 return PutIfMatch(key, factoryFunction(), EMPTY);
             }
             return  previousVal as T;
-
-        }
+       }
 
 
         private T PutIfMatch(long key, object putVal, object expectedVal)
@@ -113,7 +124,7 @@ namespace concurrent_collections
                     if (!(previousVal == null || previousVal == EMPTY) && putVal == EMPTY) _size.Decrement();
                     return previousVal as T;
                 }   
-                //cas failed get previous value
+                //cas failed get previous value, and try again if required
                 previousVal = _values[idx];
             }
 
@@ -147,8 +158,6 @@ namespace concurrent_collections
 
         public bool TryGetValue(long key, out T val)
         {
-
-
             val = null;
             var index = IndexOf(key);
             while (true)
@@ -161,9 +170,7 @@ namespace concurrent_collections
                     return true;
                 }
                 index = Next(index);
-
             }
-
         }
 
         private uint Next(uint index)
@@ -182,26 +189,6 @@ namespace concurrent_collections
         {
             T unused;
             return _keys.Where(k => TryGetValue(k, out unused)).ToArray();
-        }
-    }
-
-    public class AtomicInt
-    {
-        private int count =0;
-
-        public int Value
-        {
-            get { return count; }
-        }
-
-        public void Increment()
-        {
-            Interlocked.Increment(ref count);
-        }
-
-        public void Decrement()
-        {
-            Interlocked.Decrement(ref count);
         }
     }
 }
