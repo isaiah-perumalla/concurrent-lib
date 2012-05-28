@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using concurrent_collections.conurrent.utils;
 
 namespace concurrent_collections
 {
@@ -27,28 +28,16 @@ namespace concurrent_collections
 
         public NonBlockingLongHashTable(uint capacity)
         {
-            _tableLength = PowerOf2ClosestTo(capacity*2);
-            Debug.Assert(IsPowerOf2(_tableLength));
+            _tableLength = (capacity*2).NextPowerOfTwo();
+            Debug.Assert(_tableLength.IsPowerOf2());
             _keys = new long[_tableLength];
             _values = new object[_tableLength];
         }
 
-        private bool IsPowerOf2(uint x)
-        {
-            return (x & (x - 1)) == 0;
-        }
+        
 
 
-        private static uint PowerOf2ClosestTo(uint num)
-        {
-            var n = num > 0 ? num - 1 : 0;
-            n |= n >> 1;
-            n |= n >> 2;
-            n |= n >> 4;
-            n |= n >> 8;
-            n |= n >> 16;
-            return ++n;
-        }
+        
 
 
         public int Count
