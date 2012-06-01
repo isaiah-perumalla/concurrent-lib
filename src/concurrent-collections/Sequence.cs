@@ -11,7 +11,7 @@ namespace concurrent_collections
        
         
         [FieldOffset(CacheLineSize)] long value;
-        const int CacheLineSize=128;
+        const int CacheLineSize=64;
 
         public Sequence(long initialValue)
         {
@@ -45,6 +45,12 @@ namespace concurrent_collections
         public long VolatileGet()
         {
             Thread.MemoryBarrier();
+            return value;
+        }
+
+        [MethodImpl(MethodImplOptions.NoOptimization)]
+        public long CompilerFenceGet()
+        {
             return value;
         }
     }

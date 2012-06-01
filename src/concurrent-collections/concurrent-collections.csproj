@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="AtomicArray.cs" />
     <Compile Include="AtomicInt.cs" />
+    <Compile Include="MProducerSConsumerQueue.cs" />
     <Compile Include="SingleProducerSingleConsumerQueue.cs" />
     <Compile Include="conurrent.utils\Extensions.cs" />
     <Compile Include="MultiProducerSingleConsumerQueue.cs" />

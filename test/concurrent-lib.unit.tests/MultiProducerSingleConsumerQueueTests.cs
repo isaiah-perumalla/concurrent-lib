@@ -10,10 +10,11 @@ namespace concurrent_lib.unit.tests{
     [TestFixture]
     public class MultiProducerSingleConsumerQueueTests
     {
-        readonly IProducerConsumerQueue<int> queue = new MultiProducerSingleConsumerQueue<int>(1024*8);
+        //readonly IProducerConsumerQueue<int> queue = new MultiProducerSingleConsumerQueue<int>(1024*8);
+        readonly IProducerConsumerQueue<int> queue = new MProducerSConsumerQueue<int>(1024*8);
         //readonly BlockingCollection<int> queue = new BlockingCollection<int>( (1024*8));
-        private const int NUM_PRODUCERS = 3;
-        private const int REPETITIONS = 20*1000*1000 ;
+        private const int NUM_PRODUCERS =3;
+        private const int REPETITIONS = 20*1000*1000;
 
 
     [Test]
@@ -40,7 +41,10 @@ namespace concurrent_lib.unit.tests{
 
         for (var i = 0; i < NUM_PRODUCERS * REPETITIONS; i++)
         {
-            while (!queue.TryTake(out id)) { /*busy spin */ }
+            while (!queue.TryTake(out id))
+            {
+                 /*busy spin */
+            }
             var producerNum = id - 1;
             ++producerCounts[producerNum];
         }
