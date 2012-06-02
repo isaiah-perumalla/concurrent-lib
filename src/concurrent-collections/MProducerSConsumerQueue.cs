@@ -57,7 +57,6 @@ namespace concurrent_collections
         private void SetAt(long index, T item, long tail)
         {
             items[index].SetValue(item);
-            
             items[index].SetSeq(tail + 1);
         }
 

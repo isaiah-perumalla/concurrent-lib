@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="CoarseLockBasedHashTable.cs" />
     <Compile Include="diagnostics\L3CacheLatencyTest.cs" />
+    <Compile Include="MProducerSConsumerQueueTest.cs" />
+    <Compile Include="MPSCQueueTestsCase.cs" />
     <Compile Include="MultiProducerSingleConsumerQueueTests.cs" />
     <Compile Include="utils\HashMapBlitzer.cs" />
     <Compile Include="NonBlockingLongHashTableTests.cs" />
